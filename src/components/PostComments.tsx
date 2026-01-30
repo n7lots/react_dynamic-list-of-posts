@@ -11,29 +11,41 @@ type Props = {
 export const PostComments: React.FC<Props> = ({ postId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
+
+  const [loadError, setLoadError] = useState(false);
+  const [deletionError, setDeletionError] = useState(false);
+
   const [isWriting, setIsWriting] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
-    setErrorMessage(false);
+    setLoadError(false);
+    setDeletionError(false);
     setIsWriting(false);
 
     getPostComments(postId)
       .then(setComments)
-      .catch(() => setErrorMessage(true))
+      .catch(() => setLoadError(true))
       .finally(() => setIsLoading(false));
   }, [postId]);
 
   const handleDelete = (commentId: number) => {
+    setDeletionError(false);
+
     setComments(prevComms => prevComms.filter(comm => comm.id !== commentId));
 
     deleteComment(commentId).catch(() => {
-      getPostComments(postId).then(setComments);
+      setDeletionError(true);
+
+      getPostComments(postId)
+        .then(setComments)
+        .catch(() => setLoadError(true));
     });
   };
 
   const handleAdd = (newComment: Omit<Comment, 'id'>): Promise<void> => {
+    setDeletionError(false);
+
     return createComment(newComment)
       .then(res => setComments(prev => [...prev, res]))
       .catch(error => {
@@ -45,13 +57,13 @@ export const PostComments: React.FC<Props> = ({ postId }) => {
     <div className="block">
       {isLoading && <Loader />}
 
-      {!isLoading && errorMessage && (
+      {!isLoading && loadError && (
         <div className="notification is-danger" data-cy="CommentsError">
           Something went wrong
         </div>
       )}
 
-      {!isLoading && !errorMessage && (
+      {!isLoading && !loadError && (
         <>
           {comments.length === 0 ? (
             <p className="title is-4" data-cy="NoCommentsMessage">
@@ -59,6 +71,17 @@ export const PostComments: React.FC<Props> = ({ postId }) => {
             </p>
           ) : (
             <p className="title is-4">Comments:</p>
+          )}
+
+          {deletionError && (
+            <div className="notification is-danger">
+              Unable to delete comment
+              <button
+                className="delete"
+                onClick={() => setDeletionError(false)}
+                aria-label="close notification"
+              />
+            </div>
           )}
 
           {comments.map(comm => (
