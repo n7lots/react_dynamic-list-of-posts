@@ -28,13 +28,17 @@ export const PostComments: React.FC<Props> = ({ postId }) => {
   const handleDelete = (commentId: number) => {
     setComments(prevComms => prevComms.filter(comm => comm.id !== commentId));
 
-    deleteComment(commentId).catch(() => {});
+    deleteComment(commentId).catch(() => {
+      getPostComments(postId).then(setComments);
+    });
   };
 
   const handleAdd = (newComment: Omit<Comment, 'id'>): Promise<void> => {
     return createComment(newComment)
       .then(res => setComments(prev => [...prev, res]))
-      .catch(() => setErrorMessage(true));
+      .catch(error => {
+        throw error;
+      });
   };
 
   return (

@@ -43,7 +43,10 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAdd }) => {
     };
 
     onAdd(newComment)
-      .then(() => setBody(''))
+      .then(() => {
+        setBody('');
+        setBodyError(false);
+      })
       .catch(() => {})
       .finally(() => setIsSubmitting(false));
   };
@@ -177,7 +180,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAdd }) => {
 
         <div className="control">
           <button
-            type="reset"
+            type="button"
             className="button is-link is-light"
             onClick={handleClear}
           >
