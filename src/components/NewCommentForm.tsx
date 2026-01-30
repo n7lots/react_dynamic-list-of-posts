@@ -52,6 +52,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAdd }) => {
     setName('');
     setEmail('');
     setBody('');
+    setNameError(false);
+    setEmailError(false);
+    setBodyError(false);
   };
 
   return (
@@ -174,7 +177,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAdd }) => {
 
         <div className="control">
           <button
-            type="button"
+            type="reset"
             className="button is-link is-light"
             onClick={handleClear}
           >

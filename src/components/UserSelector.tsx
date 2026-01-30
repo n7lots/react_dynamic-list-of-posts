@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { User } from '../types/User';
 import cl from 'classnames';
 
@@ -17,9 +17,33 @@ export const UserSelector: React.FC<Props> = ({
   isActive,
   users,
 }) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        onToggle();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isActive, onToggle]);
+
   return (
     <div
       data-cy="UserSelector"
+      ref={dropdownRef}
       className={cl('dropdown', { 'is-active': isActive })}
     >
       <div className="dropdown-trigger">
@@ -38,29 +62,27 @@ export const UserSelector: React.FC<Props> = ({
         </button>
       </div>
 
-      {isActive && (
-        <div className="dropdown-menu" id="dropdown-menu" role="menu">
-          <div className="dropdown-content">
-            {users.map(user => (
-              <a
-                key={user.id}
-                href={`#user-${user.id}`}
-                onClick={e => {
-                  e.preventDefault();
+      <div className="dropdown-menu" id="dropdown-menu" role="menu">
+        <div className="dropdown-content">
+          {users.map(user => (
+            <a
+              key={user.id}
+              href={`#user-${user.id}`}
+              onClick={e => {
+                e.preventDefault();
 
-                  onSelect(user);
-                  onToggle();
-                }}
-                className={cl('dropdown-item', {
-                  'is-active': selectedUser?.id === user.id,
-                })}
-              >
-                {user.name}
-              </a>
-            ))}
-          </div>
+                onSelect(user);
+                onToggle();
+              }}
+              className={cl('dropdown-item', {
+                'is-active': selectedUser?.id === user.id,
+              })}
+            >
+              {user.name}
+            </a>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };
